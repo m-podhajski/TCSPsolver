@@ -1,204 +1,206 @@
 #include <algorithm>
 #include <stack>
+#include <unordered_map>
+#include <map>
+#include <unordered_set>
 #include "constraint.h"
+
 
 class LLClosed {
 private:
-    static WeakLinearOrder createThirdOrder(const WeakLinearOrder &order1, const WeakLinearOrder &order2, int e) {
-        std::vector<std::set<int>> orderGraph;
-        int arity = order1.arity;
-        orderGraph.resize(arity);
-        for (int i = 0; i < arity; i++) {
-            for (int j = 0; j < arity; j++) {
-                if (order1.orderGraph[i].find(j) != order1.orderGraph[i].end()
-                    && order2.orderGraph[i].find(j) != order2.orderGraph[i].end()) {
-                    orderGraph[i].insert(j);
+    static std::set<int>
+    edges(int vertex, std::unordered_map<int, std::map<TemporalConstraint *, WeakLinearOrder *>> &leastValueTuple,
+          std::unordered_map<int, std::map<TemporalConstraint *, int>> &variableToConstraintPosition) {
+        std::set<int> edges;
+        for (const auto &vertexConstraints: leastValueTuple[vertex]) {
+            int min = vertexConstraints.second->toList().size();
+            for (int i = 0; i < vertexConstraints.second->toList().size(); i++) {
+                if (vertexConstraints.first->variables[i] != -1 && vertexConstraints.second->toList()[i] < min) {
+                    min = vertexConstraints.second->toList()[i];
                 }
-                if (order1.orderGraph[i].find(j) != order1.orderGraph[i].end()
-                    && order1.orderGraph[j].find(i) == order1.orderGraph[j].end()
-                    && order1.orderGraph[i].find(e) != order1.orderGraph[i].end()) {
-                    orderGraph[i].insert(j);
+            }
+            if (vertexConstraints.second->toList()[variableToConstraintPosition[vertex][vertexConstraints.first]] !=
+                min) {
+                for (const auto &vertex1: leastValueTuple) {
+                    if (vertex != vertex1.first) {
+                        edges.insert(vertex1.first);
+                    }
                 }
-                if (order2.orderGraph[i].find(j) != order2.orderGraph[i].end()
-                    && order2.orderGraph[j].find(i) == order2.orderGraph[j].end()
-                    && order1.orderGraph[e].find(j) != order1.orderGraph[e].end()
-                    && order1.orderGraph[j].find(e) == order1.orderGraph[j].end()) {
-                    orderGraph[i].insert(j);
+            } else {
+                for (auto i: vertexConstraints.second->equivalenceClass[variableToConstraintPosition[vertex][vertexConstraints.first]]) {
+                    if (vertexConstraints.first->variables[i] != -1) {
+                        edges.insert(vertexConstraints.first->variables[i]);
+                    }
                 }
             }
         }
-
-        return WeakLinearOrder(arity, orderGraph);
+        edges.erase(vertex);
+        return edges;
     }
 
-    class Graph {
-    private:
-        std::vector<std::set<int>> graph;
-        std::set<std::set<int>> components;
-        std::vector<TemporalConstraint> constraints;
+    static void strongConnect(int vertex, int &index, std::unordered_map<int, bool> &stackMember,
+                              std::unordered_map<int, int> &lowLink,
+                              std::stack<int> &stack, std::unordered_map<int, int> &sscomponents,
+                              std::unordered_map<int, std::map<TemporalConstraint *, WeakLinearOrder *>> &leastValueTuple,
+                              std::unordered_map<int, std::map<TemporalConstraint *, int>> &variableToConstraintPosition,
+                              std::vector<std::set<int>> &components) {
+        sscomponents[vertex] = index;
+        lowLink[vertex] = index;
+        index++;
+        stack.push(vertex);
+        stackMember[vertex] = true;
 
-
-        void strongConnect(int vertex, int &index, std::vector<bool> &stackMember, std::vector<int> &lowLink,
-                           std::stack<int> &stack, std::vector<int> &sscomponents) {
-            sscomponents[vertex] = index;
-            lowLink[vertex] = index;
-            index++;
-            stack.push(vertex);
-            stackMember[vertex] = true;
-            for (int edgeVertex: graph[vertex]) {
-                if (sscomponents[edgeVertex] == -1) {
-                    strongConnect(edgeVertex, index, stackMember, lowLink, stack, sscomponents);
-                    lowLink[vertex] = std::min(lowLink[vertex], lowLink[edgeVertex]);
-                } else if (stackMember[edgeVertex]) {
-                    lowLink[vertex] = std::min(lowLink[vertex], sscomponents[edgeVertex]);
-                }
-            }
-            if (lowLink[vertex] == sscomponents[vertex]) {
-                std::set<int> component;
-                int w = -1;
-                do {
-                    w = stack.top();
-                    stack.pop();
-                    stackMember[w] = false;
-                    component.insert(w);
-                } while (w != vertex);
-                components.insert(component);
+        for (auto edgeVertex: edges(vertex, leastValueTuple, variableToConstraintPosition)) {
+            if (sscomponents[edgeVertex] == -1) {
+                strongConnect(edgeVertex, index, stackMember, lowLink, stack, sscomponents, leastValueTuple,
+                              variableToConstraintPosition, components);
+                lowLink[vertex] = std::min(lowLink[vertex], lowLink[edgeVertex]);
+            } else if (stackMember[edgeVertex]) {
+                lowLink[vertex] = std::min(lowLink[vertex], sscomponents[edgeVertex]);
             }
         }
-
-
-        //Tarjan's algorithm
-        void stronglyConnectedComponents() {
-            int index = 0;
-            std::stack<int> stack;
-            std::vector<int> sscomponents(graph.size(), -1);
-            std::vector<bool> stackMember(graph.size());
-            std::vector<int> lowLink(graph.size());
-            for (int vertex = 0; vertex < graph.size(); vertex++) {
-                if (sscomponents[vertex] == -1) {
-                    strongConnect(vertex, index, stackMember, lowLink, stack, sscomponents);
-                }
-            }
+        if (lowLink[vertex] == sscomponents[vertex]) {
+            std::set<int> component;
+            int w = -1;
+            do {
+                w = stack.top();
+                stack.pop();
+                stackMember[w] = false;
+                component.insert(w);
+            } while (w != vertex);
+            components.push_back(component);
         }
-
-    public:
-        bool containsSinkComponent() {
-            for (const auto &component: components) {
-                bool isBlocked = false;
-                for (auto constraint: constraints) {
-                    if (constraint.isBlocked(*component.begin())) {
-                        isBlocked = true;
-                        break;
-                    }
-                }
-                if (!isBlocked) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        std::set<int> returnSinkComponent() {
-            std::set<int> sinkComponent;
-            for (const auto &component: components) {
-                bool isBlocked = false;
-                for (auto constraint: constraints) {
-                    if (constraint.isBlocked(*component.begin())) {
-                        isBlocked = true;
-                        break;
-                    }
-                }
-                if (!isBlocked) {
-                    return component;
-                }
-            }
-            return sinkComponent;
-        }
-
-        bool containsSink() {
-            for (const auto &component: components) {
-                if (component.size() == 1) {
-                    bool isBlocked = false;
-                    for (auto constraint: constraints) {
-                        if (constraint.isBlocked(*component.begin())) {
-                            isBlocked = true;
-                            break;
-                        }
-                    }
-                    if (!isBlocked) {
-                        return true;
-                    }
-                }
-            }
-            return false;
-        }
-
-        int returnSink() {
-            for (const auto &component: components) {
-                if (component.size() == 1) {
-                    bool isBlocked = false;
-                    for (auto constraint: constraints) {
-                        if (constraint.isBlocked(*component.begin())) {
-                            isBlocked = true;
-                            break;
-                        }
-                    }
-                    if (!isBlocked) {
-                        return *component.begin();
-                    }
-                }
-            }
-            return -1;
-        }
-
-        explicit Graph(TemporalCSPInstance &instance) {
-            int size = *instance.variables().rbegin() + 1;
-            graph.resize(size);
-            for (TemporalConstraint constraint: instance.constraints) {
-                for (int i = 0; i < graph.size(); i++) {
-                    std::set<int> intersect(instance.variables());
-                    for (auto s: constraint.minimalVariables()) {
-                        if (s.find(i) != s.end()) {
-                            std::set<int> intersectPrim;
-                            std::set_intersection(s.begin(), s.end(), intersect.begin(), intersect.end(),
-                                                  std::inserter(intersectPrim, intersectPrim.begin()));
-                            intersect = intersectPrim;
-                        }
-                    }
-                    graph[i].merge(intersect);
-                    graph[i].erase(i);
-                }
-            }
-            stronglyConnectedComponents();
-            constraints = instance.constraints;
-        }
-
-        void reconstructGraph(int vertex) {
-            std::set<int> deleteComponent;
-            deleteComponent.insert(vertex);
-            components.erase(deleteComponent);
-        }
-    };
-
-    static Graph constructGraph(TemporalCSPInstance &instance) {
-        return Graph(instance);
     }
 
-
-    static bool spec(TemporalCSPInstance &cspInstance, std::set<int> &newVariables) {
-        Graph graph = constructGraph(cspInstance);
-        std::set<int> Y;
-        std::set<int> X(cspInstance.variables());
-        TemporalCSPInstance cspInstancePrim = cspInstance;
-        while (graph.containsSink()) {
-            int s = graph.returnSink();
-            Y.insert(s);
-            graph.reconstructGraph( s);
+    static void stronglyConnectedComponents(
+            std::unordered_map<int, std::map<TemporalConstraint *, WeakLinearOrder *>> &leastValueTuple,
+            std::unordered_map<int, std::map<TemporalConstraint *, int>> &variableToConstraintPosition,
+            std::vector<std::set<int>> &components) {
+        int index = 0;
+        std::stack<int> stack;
+        std::unordered_map<int, int> sscomponents;
+        for (const auto &a: leastValueTuple) {
+            sscomponents[a.first] = -1;
         }
-        if (X == Y) {
+        std::unordered_map<int, bool> stackMember;
+        std::unordered_map<int, int> lowLink;
+        for (const auto& vertex: leastValueTuple) {
+            if (sscomponents[vertex.first] == -1) {
+                strongConnect(vertex.first, index, stackMember, lowLink, stack, sscomponents, leastValueTuple,
+                              variableToConstraintPosition, components);
+            }
+        }
+    }
+
+    static bool spec(TemporalCSPInstance cspInstance, std::set<int> &newVariables) {
+        //TODO: set up this structure more efficiently
+        // edge x->y iff leastValueTuple[x] is not min or leastValueTuple[x] is min and y in equiv[x]
+        std::unordered_map<int, std::map<TemporalConstraint *, WeakLinearOrder *>> leastValueTuple;
+        std::unordered_map<int, std::map<TemporalConstraint *, int>> variableToConstraintPosition;
+        std::unordered_map<int, std::unordered_set<TemporalConstraint *>> blocked;
+        std::vector<std::set<int>> components;
+        int variablesSize = cspInstance.variables().size();
+        for (auto &constraint : cspInstance.constraints) {
+            TemporalRelation relation = constraint.constraintLanguage.relations[constraint.relation];
+            for (int i = 0; i < constraint.variables.size(); i++) {
+                int variable = constraint.variables[i];
+                WeakLinearOrder weakLinearOrder = *std::max_element(relation.tuples.begin(), relation.tuples.end(),
+                                                                    [i](const WeakLinearOrder &a,
+                                                                        const WeakLinearOrder &b) {
+                                                                        std::vector<int> aTuple = a.toList();
+                                                                        std::vector<int> bTuple = b.toList();
+                                                                        if (aTuple[i] == bTuple[i]) {
+                                                                            return a.equivalenceClassNumber <
+                                                                                   b.equivalenceClassNumber;
+                                                                        } else return aTuple[i] > bTuple[i];
+                                                                    });
+                auto *weakLinearOrder2 = new WeakLinearOrder(weakLinearOrder);
+                leastValueTuple[variable][&constraint] = weakLinearOrder2;
+                variableToConstraintPosition[variable][&constraint] = i;
+                bool isBlocked = true;
+                for (WeakLinearOrder weakLinearOrder1: relation.tuples) {
+                    if (weakLinearOrder.toList()[i] == 0) {
+                        isBlocked = false;
+                    }
+                }
+                if (isBlocked) {
+                    blocked[variable].insert(&constraint);
+                }
+            }
+        }
+        stronglyConnectedComponents(leastValueTuple, variableToConstraintPosition, components);
+        std::vector<int> sinks;
+        std::set<int> sinkSet;
+        std::unordered_map<int, int> variableToComponent;
+        for (int i = 0; i < components.size(); i++) {
+            for (auto variable: components[i]) {
+                variableToComponent[variable] = i;
+            }
+        }
+        for (const auto &component: components) {
+            if (component.size() == 1 && blocked[*component.begin()].empty()) {
+                if (edges(*component.begin(), leastValueTuple, variableToConstraintPosition).empty()) {
+                    sinks.push_back(*component.begin());
+                    sinkSet.insert(*component.begin());
+                }
+            }
+        }
+        std::set<int> sinkY;
+        while (!sinks.empty()) {
+            int currentSink = sinks.front();
+            sinks.pop_back();
+            sinkSet.erase(currentSink);
+            auto constraintsOfSink = leastValueTuple[currentSink];
+            sinkY.insert(currentSink);
+            leastValueTuple.erase(currentSink);
+            variableToConstraintPosition.erase(currentSink);
+            blocked.erase(currentSink);
+            for (auto &constraint: constraintsOfSink) {
+
+                constraint.first->orderedProjection({currentSink});
+
+                for (int i =0;i<constraint.first->variables.size();i++) {
+                    int variable = constraint.first->variables[i];
+                    if(variable == -1){
+                        continue;
+                    }
+                    if (blocked[variable].find(constraint.first) != blocked[variable].end()) {
+                        int min = leastValueTuple[variable][constraint.first]->toList().size();
+                        for (int j = 0; j < leastValueTuple[variable][constraint.first]->toList().size(); j++) {
+                            if (constraint.first->variables[j] != -1 && leastValueTuple[variable][constraint.first]->toList()[j] < min) {
+                                min = leastValueTuple[variable][constraint.first]->toList()[j];
+                            }
+                        }
+                        if(leastValueTuple[variable][constraint.first]->toList()[i] == min){
+                            blocked[variable].erase(constraint.first);
+                        }
+                    }
+                    if(blocked[variable].empty()&&edges(variable, leastValueTuple, variableToConstraintPosition).empty()){
+                        sinkSet.insert(variable);
+                        sinks.push_back(variable);
+                    }
+                }
+            }
+
+        }
+        if (sinkY.size() == variablesSize) {
             return true;
-        } else if (graph.containsSinkComponent()) {
-            newVariables.merge(graph.returnSinkComponent());
+        }
+        components.clear();
+        stronglyConnectedComponents(leastValueTuple, variableToConstraintPosition, components);
+        for (const auto &component: components) {
+            bool isSinkComponent = true;
+            for (auto variable: component) {
+                if (!(blocked[variable].empty() &&
+                      edges(variable, leastValueTuple, variableToConstraintPosition).size() == component.size() - 1)) {
+                    isSinkComponent = false;
+                }
+            }
+            if (isSinkComponent) {
+                newVariables.clear();
+                newVariables.insert(component.begin(), component.end());
+                return true;
+            }
         }
         return false;
     }
@@ -224,22 +226,6 @@ private:
     }
 
 public:
-    static bool checkClosure(const TemporalConstraintLanguage &constraint) {
-        for (const TemporalRelation &relation: constraint.relations) {
-            for (const auto &order1: relation.tuples) {
-                for (const auto &order2: relation.tuples) {
-                    for (int e = 0; e < relation.arity; e++) {
-                        const WeakLinearOrder &thirdOrder = createThirdOrder(order1, order2, e);
-                        if (relation.tuples.find(thirdOrder) == relation.tuples.end())
-                            return false;
-                    }
-                }
-            }
-        }
-        return true;
-    }
-
-
     static bool solve(TemporalCSPInstance &cspInstance) {
         std::set<int> newVariables;
         bool specResult = spec(cspInstance, newVariables);

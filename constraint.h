@@ -20,35 +20,56 @@ private:
     }
 
 public:
-    const int arity;
+    int arity;
 
     //krawedz oznacza <=, brak krawedzi !<= czyli >
     std::vector<std::set<int>> orderGraph;
+    std::vector<std::set<int>> equivalenceClass;
+    std::vector<int> list;
+    int equivalenceClassNumber{};
 
     WeakLinearOrder(int arity, const std::vector<int> &tuple) : arity(arity) {
         createOrderGraph(tuple);
+        equivalenceClass.resize(arity);
+        for(int i=0;i<arity;i++){
+            for(int j=0;j<arity;j++){
+                if(tuple[i]==tuple[j]&&i!=j){
+                    equivalenceClass[i].insert(j);
+                }
+            }
+        }
+        std::set<int> classes;
+        for(int i=0;i<arity;i++){
+            classes.insert(tuple[i]);
+        }
+        equivalenceClassNumber = classes.size();
+        std::set<int> sortedTuple(tuple.begin(), tuple.end());
+        int i=0;
+        std::unordered_map<int, int> normalizedTuple;
+        for(auto variable: sortedTuple){
+            normalizedTuple[variable] = i;
+            i++;
+        }
+        list.resize(arity);
+        for(i=0;i<arity;i++){
+            int newValue = normalizedTuple[tuple[i]];
+            list[i] = newValue;
+        }
     }
 
     WeakLinearOrder(int arity, std::vector<std::set<int>> orderGraph) : arity(arity),
-                                                                        orderGraph(std::move(orderGraph)) {}
-
-    std::vector<int> toList() {
-        std::vector<int> result;
-        result.reserve(arity);
-        for(int i=0;i<arity;i++){
-            result.push_back(arity-orderGraph[i].size());
-        }
-        return result;
+                                                                        orderGraph(std::move(orderGraph)) {
     }
 
-    std::set<int> minimalEntries() const {
-        std::set<int> minimals;
-        for (int vertex = 0; vertex < arity; vertex++) {
-            if (orderGraph[vertex].size() == arity) {
-                minimals.insert(vertex);
-            }
-        }
-        return minimals;
+    std::vector<std::set<int>> equivalenceClasses(){
+        return equivalenceClass;
+    }
+
+    int equivalenceClassesNumber() const{
+        return equivalenceClassNumber;
+    }
+    std::vector<int> toList() const {
+       return list;
     }
 };
 
@@ -89,7 +110,7 @@ public:
                                                      relation(relation),
                                                      variables(std::move(variables)) {}
 
-    void orderedProjection(std::set<int> set) {
+    void orderedProjection(std::set<int> set){
         for (int &variable : variables) {
             if (set.find(variable) != set.end()) {
                 variable = -1;
@@ -110,27 +131,17 @@ public:
         }
     }
 
-
-    //for every tuple in relation set of variables that are on minimal entry
-    std::vector<std::set<int>> minimalVariables() const {
-        std::vector<std::set<int>> minimals;
-        for (const auto &tuple: constraintLanguage.relations[relation].tuples) {
-            std::set<int> minimalVariables;
-            for (auto minimalEntry: tuple.minimalEntries()) {
-                if (variables[minimalEntry] != -1)
-                    minimalVariables.insert(variables[minimalEntry]);
+    bool operator<(const TemporalConstraint& p) const
+    {
+        if(this->relation != p.relation){
+            return this->relation < p.relation;
+        }
+        for(int i=0;i<variables.size();i++){
+            if(this->variables[i]!=p.variables[i]){
+                return this->variables[i]<p.variables[i];
             }
-            minimals.push_back(minimalVariables);
         }
-        return minimals;
-    }
-
-    bool isBlocked(int variable) const {
-        for (auto minimals: minimalVariables()) {
-            if (minimals.find(variable) != minimals.end())
-                return false;
-        }
-        return true;
+        return false;
     }
 };
 
