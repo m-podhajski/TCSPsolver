@@ -60,14 +60,6 @@ public:
     WeakLinearOrder(int arity, std::vector<std::set<int>> orderGraph) : arity(arity),
                                                                         orderGraph(std::move(orderGraph)) {
     }
-
-    std::vector<std::set<int>> equivalenceClasses(){
-        return equivalenceClass;
-    }
-
-    int equivalenceClassesNumber() const{
-        return equivalenceClassNumber;
-    }
     std::vector<int> toList() const {
        return list;
     }
