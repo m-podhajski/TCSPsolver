@@ -31,27 +31,27 @@ public:
     WeakLinearOrder(int arity, const std::vector<int> &tuple) : arity(arity) {
         createOrderGraph(tuple);
         equivalenceClass.resize(arity);
-        for(int i=0;i<arity;i++){
-            for(int j=0;j<arity;j++){
-                if(tuple[i]==tuple[j]&&i!=j){
+        for (int i = 0; i < arity; i++) {
+            for (int j = 0; j < arity; j++) {
+                if (tuple[i] == tuple[j] && i != j) {
                     equivalenceClass[i].insert(j);
                 }
             }
         }
         std::set<int> classes;
-        for(int i=0;i<arity;i++){
+        for (int i = 0; i < arity; i++) {
             classes.insert(tuple[i]);
         }
         equivalenceClassNumber = classes.size();
         std::set<int> sortedTuple(tuple.begin(), tuple.end());
-        int i=0;
+        int i = 0;
         std::unordered_map<int, int> normalizedTuple;
-        for(auto variable: sortedTuple){
+        for (auto variable: sortedTuple) {
             normalizedTuple[variable] = i;
             i++;
         }
         list.resize(arity);
-        for(i=0;i<arity;i++){
+        for (i = 0; i < arity; i++) {
             int newValue = normalizedTuple[tuple[i]];
             list[i] = newValue;
         }
@@ -60,8 +60,9 @@ public:
     WeakLinearOrder(int arity, std::vector<std::set<int>> orderGraph) : arity(arity),
                                                                         orderGraph(std::move(orderGraph)) {
     }
+
     std::vector<int> toList() const {
-       return list;
+        return list;
     }
 };
 
@@ -102,7 +103,7 @@ public:
                                                      relation(relation),
                                                      variables(std::move(variables)) {}
 
-    void orderedProjection(std::set<int> set){
+    void orderedProjection(std::set<int> set) {
         for (int &variable : variables) {
             if (set.find(variable) != set.end()) {
                 variable = -1;
@@ -123,14 +124,13 @@ public:
         }
     }
 
-    bool operator<(const TemporalConstraint& p) const
-    {
-        if(this->relation != p.relation){
+    bool operator<(const TemporalConstraint &p) const {
+        if (this->relation != p.relation) {
             return this->relation < p.relation;
         }
-        for(int i=0;i<variables.size();i++){
-            if(this->variables[i]!=p.variables[i]){
-                return this->variables[i]<p.variables[i];
+        for (int i = 0; i < variables.size(); i++) {
+            if (this->variables[i] != p.variables[i]) {
+                return this->variables[i] < p.variables[i];
             }
         }
         return false;
