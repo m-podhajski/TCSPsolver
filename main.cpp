@@ -17,7 +17,7 @@ int main() {
                                    {1, 2, 5, 3}); // R_0(x_1,x_2,x_5,x_3) - relacja R_0 o indeksie 0
     TemporalCSPInstance temporalCspInstance(temporalConstraintLanguage,
                                             {constraint1, constraint2,
-                                             constraint3}); // R(x_1,x_2,x_3,x_4)^R(x_1,x_2,x_4,x_5)^R(x_1,x_2,x_5,x_3)
+                                             constraint3}); // R_0(x_1,x_2,x_3,x_4)^R_0(x_1,x_2,x_4,x_5)^R_0(x_1,x_2,x_5,x_3)
 
     std::cout << LLClosed::solve(temporalCspInstance) << std::endl;
     return 0;
