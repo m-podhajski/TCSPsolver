@@ -2,10 +2,10 @@
 #include "tests/tests.cpp"
 
 int main() {
-    WeakLinearOrder order1(4, {0, 0, 1, 1}); // {(a,b,c,d) : (a=b<c=d)}
-    WeakLinearOrder order2(4, {0, 1, 2, 3}); // {(a,b,c,d) : (a<b<c<d)}
+    WeakLinearOrder order1(4, {0, 0, 1, 1}); // {(a,b,c,d) : (a=b<c=d)}, arnosc=4
+    WeakLinearOrder order2(4, {0, 1, 2, 3}); // {(a,b,c,d) : (a<b<c<d)}, arnosc=4
 
-    TemporalRelation relation1(4, {order1, order2}); // R_0 = {(a,b,c,d) : (a=b^b<c^c=d)v(a<b<c<d)}
+    TemporalRelation relation1(4, {order1, order2}); // R_0 = {(a,b,c,d) : (a=b^b<c^c=d)v(a<b<c<d)}, arnosc=4
     TemporalConstraintLanguage temporalConstraintLanguage({relation1}); //sklada sie z jednej relacji - R_0
 
 
