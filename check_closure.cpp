@@ -161,8 +161,4 @@ public:
         
         return true;
     }
-<<<<<<< HEAD
 };
-=======
-};
->>>>>>> dfe799a1e30d06a7b066209cbd98b71f30c91c8e
