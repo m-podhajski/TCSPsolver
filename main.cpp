@@ -18,11 +18,11 @@ int main(int argc, char *argv[])
         std::cout << "Language is mi closed, using mi algorithm" << std::endl;
         if (MiClosed::solve(instance))
         {
-            std::cout << "Instance is satifiable" << std::endl;
+            std::cout << "Instance is satisfiable" << std::endl;
         }
         else
         {
-            std::cout << "Instance is not satifiable" << std::endl;
+            std::cout << "Instance is not satisfiable" << std::endl;
         }
     }
     else if (CheckClosure::minClosure(instance.constraintLanguage))
@@ -30,11 +30,11 @@ int main(int argc, char *argv[])
         std::cout << "Language is min closed, using min algorithm" << std::endl;
         if (MinClosed::solve(instance))
         {
-            std::cout << "Instance is satifiable" << std::endl;
+            std::cout << "Instance is satisfiable" << std::endl;
         }
         else
         {
-            std::cout << "Instance is not satifiable" << std::endl;
+            std::cout << "Instance is not satisfiable" << std::endl;
         }
     }
     else if (CheckClosure::mxClosure(instance.constraintLanguage))
@@ -42,11 +42,11 @@ int main(int argc, char *argv[])
         std::cout << "Language is mx closed, using mx algorithm" << std::endl;
         if (MxClosed::solve(instance))
         {
-            std::cout << "Instance is satifiable" << std::endl;
+            std::cout << "Instance is satisfiable" << std::endl;
         }
         else
         {
-            std::cout << "Instance is not satifiable" << std::endl;
+            std::cout << "Instance is not satisfiable" << std::endl;
         }
     }
     else if (CheckClosure::llClosure(instance.constraintLanguage))
@@ -54,11 +54,11 @@ int main(int argc, char *argv[])
         std::cout << "Language is ll closed, using ll algorithm" << std::endl;
         if (LLClosed::solve(instance))
         {
-            std::cout << "Instance is satifiable" << std::endl;
+            std::cout << "Instance is satisfiable" << std::endl;
         }
         else
         {
-            std::cout << "Instance is not satifiable" << std::endl;
+            std::cout << "Instance is not satisfiable" << std::endl;
         }
     }
     else
@@ -67,11 +67,11 @@ int main(int argc, char *argv[])
         TemporalCSPInstance klMinimalInstance = KLMinimality::solve(instance, 2, 3);
         if (Backtracking::solve(klMinimalInstance))
         {
-            std::cout << "Instance is satifiable" << std::endl;
+            std::cout << "Instance is satisfiable" << std::endl;
         }
         else
         {
-            std::cout << "Instance is not satifiable" << std::endl;
+            std::cout << "Instance is not satisfiable" << std::endl;
         }
     }
     return 0;
