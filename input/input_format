@@ -1,0 +1,17 @@
+number of relations
+relations:
+    relation1:
+        arity
+        number of weak linear orders
+        weak linear orders:
+            wlo1
+            wlo2
+            ...
+    relation2
+    ...
+number of constraints
+constraints:
+    constraint1:
+        relation variables
+    constraint2
+    ...
