@@ -1,24 +1,78 @@
 #include <iostream>
 #include "tests/tests.cpp"
+#include "./input_output.cpp"
+#include "./check_closure.cpp"
 
-int main() {
-    WeakLinearOrder order1(4, {0, 0, 1, 1}); // {(a,b,c,d) : (a=b<c=d)}, arnosc=4
-    WeakLinearOrder order2(4, {0, 1, 2, 3}); // {(a,b,c,d) : (a<b<c<d)}, arnosc=4
-
-    TemporalRelation relation1(4, {order1, order2}); // R_0 = {(a,b,c,d) : (a=b^b<c^c=d)v(a<b<c<d)}, arnosc=4
-    TemporalConstraintLanguage temporalConstraintLanguage({relation1}); //sklada sie z jednej relacji - R_0
-
-
-    TemporalConstraint constraint1(temporalConstraintLanguage, 0,
-                                   {1, 2, 3, 4}); // R_0(x_1,x_2,x_3,x_4) - relacja R_0 o indeksie 0
-    TemporalConstraint constraint2(temporalConstraintLanguage, 0,
-                                   {1, 2, 4, 5}); // R_0(x_1,x_2,x_4,x_5) - relacja R_0 o indeksie 0
-    TemporalConstraint constraint3(temporalConstraintLanguage, 0,
-                                   {1, 2, 5, 3}); // R_0(x_1,x_2,x_5,x_3) - relacja R_0 o indeksie 0
-    TemporalCSPInstance temporalCspInstance(temporalConstraintLanguage,
-                                            {constraint1, constraint2,
-                                             constraint3}); // R_0(x_1,x_2,x_3,x_4)^R_0(x_1,x_2,x_4,x_5)^R_0(x_1,x_2,x_5,x_3)
-
-    std::cout << LLClosed::solve(temporalCspInstance) << std::endl;
+int main(int argc, char *argv[])
+{
+    if (argc != 2)
+    {
+        std::cout << "Format: ./TCSPsolver inputfile" << std::endl;
+        return 1;
+    }
+    auto instance = loadFromFile(argv[1]);
+    printInstance(instance);
+    std::cout << "\nSolving:" << std::endl;
+    if (CheckClosure::miClosure(instance.constraintLanguage))
+    {
+        std::cout << "Language is mi closed, using mi algorithm" << std::endl;
+        if (MiClosed::solve(instance))
+        {
+            std::cout << "Instance is satifiable" << std::endl;
+        }
+        else
+        {
+            std::cout << "Instance is not satifiable" << std::endl;
+        }
+    }
+    else if (CheckClosure::minClosure(instance.constraintLanguage))
+    {
+        std::cout << "Language is min closed, using min algorithm" << std::endl;
+        if (MinClosed::solve(instance))
+        {
+            std::cout << "Instance is satifiable" << std::endl;
+        }
+        else
+        {
+            std::cout << "Instance is not satifiable" << std::endl;
+        }
+    }
+    else if (CheckClosure::mxClosure(instance.constraintLanguage))
+    {
+        std::cout << "Language is mx closed, using mx algorithm" << std::endl;
+        if (MxClosed::solve(instance))
+        {
+            std::cout << "Instance is satifiable" << std::endl;
+        }
+        else
+        {
+            std::cout << "Instance is not satifiable" << std::endl;
+        }
+    }
+    else if (CheckClosure::llClosure(instance.constraintLanguage))
+    {
+        std::cout << "Language is ll closed, using ll algorithm" << std::endl;
+        if (LLClosed::solve(instance))
+        {
+            std::cout << "Instance is satifiable" << std::endl;
+        }
+        else
+        {
+            std::cout << "Instance is not satifiable" << std::endl;
+        }
+    }
+    else
+    {
+        std::cout << "Using (2, 3) minimality algorithm + backtracking" << std::endl;
+        TemporalCSPInstance klMinimalInstance = KLMinimality::solve(instance, 2, 3);
+        if (Backtracking::solve(klMinimalInstance))
+        {
+            std::cout << "Instance is satifiable" << std::endl;
+        }
+        else
+        {
+            std::cout << "Instance is not satifiable" << std::endl;
+        }
+    }
     return 0;
 }
