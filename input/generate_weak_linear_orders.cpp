@@ -24,9 +24,8 @@ static bool _next(std::vector<int> &numbers, int size)
     return true;
 }
 
-static bool satisfiesConstraints(WeakLinearOrder order, std::vector<std::vector<std::pair<std::pair<int, int>, int>>> constraints)
+static bool satisfiesConstraints(std::vector<int> list, std::vector<std::vector<std::pair<std::pair<int, int>, int>>> constraints)
 {
-    auto list = order.toList();
     for (auto ors : constraints)
     {
         bool isSatisfied = true;
@@ -61,17 +60,15 @@ static TemporalRelation generateRelation(int size, std::vector<std::vector<std::
 {
     std::set<WeakLinearOrder> weakLinearOrders;
     std::vector<int> numbers(size);
-    auto order = WeakLinearOrder(size, numbers);
-    if (satisfiesConstraints(order, constraints))
+    if (satisfiesConstraints(numbers, constraints))
     {
-        weakLinearOrders.insert(order);
+        weakLinearOrders.insert(WeakLinearOrder(size, numbers));
     }
     while (_next(numbers, size))
     {
-        auto order = WeakLinearOrder(size, numbers);
-        if (satisfiesConstraints(order, constraints))
+        if (satisfiesConstraints(numbers, constraints))
         {
-            weakLinearOrders.insert(order);
+            weakLinearOrders.insert(WeakLinearOrder(size, numbers));
         }
     }
     TemporalRelation fullRelation(size, weakLinearOrders);
@@ -127,7 +124,7 @@ int main()
     int arity;
     std::cout << "Arity: ";
     std::cin >> arity;
-    std::cout << "Format (i@j and k@l and ...) or () or ...() where i, j, k, are index of variables and @ is <, = or <=" << std::endl;
+    std::cout << "Input relation:" << std::endl;
     std::string constraint;
     std::getline(std::cin, constraint);
     std::getline(std::cin, constraint);
