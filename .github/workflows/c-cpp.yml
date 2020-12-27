@@ -16,4 +16,4 @@ jobs:
     - name: make
       run: make
     - name: TCSPsolver
-      run: ./TCSPsolver
+      run: ./TCSPsolver input/mi.in
