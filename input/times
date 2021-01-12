@@ -1,0 +1,16 @@
+mi.in: (1000 constraints, 100 variables)
+mi closed:  8.298 s
+backtracking: 1:39.27 min
+
+ll.in: (1000 constraints, 200 variables)
+ll closed: 1.434 s
+backtracking: > 5:00 min
+
+min.in: (1000 constraints, 100 variables)
+ll closed: 0.702 s
+backtracking: > 5:00 min
+
+mx.in: (1000 constraints, 100 variables)
+mx closed: 0.466 s
+backtracking: > 5:00 min
+

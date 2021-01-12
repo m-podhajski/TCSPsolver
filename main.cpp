@@ -11,8 +11,18 @@ int main(int argc, char *argv[])
         return 1;
     }
     auto instance = loadFromFile(argv[1]);
-    printInstance(instance);
+    //printInstance(instance);
+    std::cout << CheckClosure::mxClosure(instance.constraintLanguage) << std::endl;
     std::cout << "\nSolving:" << std::endl;
+        if (Backtracking::solve(instance))
+        {
+            std::cout << "Instance is satisfiable" << std::endl;
+        }
+        else
+        {
+            std::cout << "Instance is not satisfiable" << std::endl;
+        }
+    return 0;
     if (CheckClosure::miClosure(instance.constraintLanguage))
     {
         std::cout << "Language is mi closed, using mi algorithm" << std::endl;
