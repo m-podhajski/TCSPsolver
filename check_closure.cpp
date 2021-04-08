@@ -3,7 +3,7 @@
 #include <iostream>
 #include "constraint.h"
 
-class CheckClosure{
+class CheckClosure {
 private:
     static WeakLinearOrder createThirdOrder(const WeakLinearOrder &order1, const WeakLinearOrder &order2, int e) {
         std::vector<std::set<int>> orderGraph;
@@ -49,116 +49,116 @@ public:
     }
 
     static bool minClosure(const TemporalConstraintLanguage &constraint) {
-        for(auto relation: constraint.relations){
+        for (auto relation: constraint.relations) {
             std::vector<std::set<int>> minSets;
-            for(auto tuple: relation.tuples){
+            for (auto tuple: relation.tuples) {
                 auto list = tuple.toList();
                 std::set<int> M;
-                for(int i = 0; i< tuple.arity; i++){
-                    if(list[i] == 0){
+                for (int i = 0; i < tuple.arity; i++) {
+                    if (list[i] == 0) {
                         M.insert(i);
                     }
                 }
                 minSets.push_back(M);
             }
-            for(auto minSet1: minSets){
-                for(auto minSet2: minSets){
+            for (auto minSet1: minSets) {
+                for (auto minSet2: minSets) {
                     bool hasApropriateSet = false;
                     std::set<int> unionSet = minSet1;
                     unionSet.insert(minSet2.begin(), minSet2.end());
-                    for(auto minSet3: minSets){
-                        if(minSet3 == unionSet){
+                    for (auto minSet3: minSets) {
+                        if (minSet3 == unionSet) {
                             hasApropriateSet = true;
                             continue;
                         }
                     }
-                    if(!hasApropriateSet){
+                    if (!hasApropriateSet) {
                         return false;
                     }
                 }
             }
         }
-        
+
         return true;
     }
 
     static bool miClosure(const TemporalConstraintLanguage &constraint) {
-        for(auto relation: constraint.relations){
+        for (auto relation: constraint.relations) {
             std::vector<std::set<int>> minSets;
-            for(auto tuple: relation.tuples){
+            for (auto tuple: relation.tuples) {
                 auto list = tuple.toList();
                 std::set<int> M;
-                for(int i = 0; i< tuple.arity; i++){
-                    if(list[i] == 0){
+                for (int i = 0; i < tuple.arity; i++) {
+                    if (list[i] == 0) {
                         M.insert(i);
                     }
                 }
                 minSets.push_back(M);
             }
-            for(auto minSet1: minSets){
-                for(auto minSet2: minSets){
+            for (auto minSet1: minSets) {
+                for (auto minSet2: minSets) {
                     bool hasApropriateSet = false;
                     std::set<int> intersect;
-                    std::set_intersection(minSet1.begin(),minSet1.end(),minSet2.begin(),minSet2.end(),
-                                                          std::inserter(intersect,intersect.begin()));
-                    if(intersect.size() == 0){
+                    std::set_intersection(minSet1.begin(), minSet1.end(), minSet2.begin(), minSet2.end(),
+                                          std::inserter(intersect, intersect.begin()));
+                    if (intersect.size() == 0) {
                         continue;
                     }
-                    for(auto minSet3: minSets){
-                        if(minSet3 == intersect){
+                    for (auto minSet3: minSets) {
+                        if (minSet3 == intersect) {
                             hasApropriateSet = true;
                             continue;
                         }
                     }
-                    if(!hasApropriateSet){
+                    if (!hasApropriateSet) {
                         return false;
                     }
                 }
             }
         }
-        
+
         return true;
     }
-    
+
     static bool mxClosure(const TemporalConstraintLanguage &constraint) {
-        for(auto relation: constraint.relations){
+        for (auto relation: constraint.relations) {
             std::vector<std::set<int>> minSets;
-            for(auto tuple: relation.tuples){
+            for (auto tuple: relation.tuples) {
                 auto list = tuple.toList();
                 std::set<int> M;
-                for(int i = 0; i< tuple.arity; i++){
-                    if(list[i] == 0){
+                for (int i = 0; i < tuple.arity; i++) {
+                    if (list[i] == 0) {
                         M.insert(i);
                     }
                 }
                 minSets.push_back(M);
             }
-            for(auto minSet1: minSets){
-                for(auto minSet2: minSets){
-                    if(minSet1 == minSet2){
+            for (auto minSet1: minSets) {
+                for (auto minSet2: minSets) {
+                    if (minSet1 == minSet2) {
                         continue;
                     }
                     bool hasApropriateSet = false;
                     std::set<int> symmetricDifferenceSet1;
                     std::set_difference(minSet1.begin(), minSet1.end(), minSet2.begin(), minSet2.end(),
-                        std::inserter(symmetricDifferenceSet1, symmetricDifferenceSet1.begin()));
+                                        std::inserter(symmetricDifferenceSet1, symmetricDifferenceSet1.begin()));
                     std::set<int> symmetricDifferenceSet;
                     std::set_difference(minSet2.begin(), minSet2.end(), minSet1.begin(), minSet1.end(),
-                        std::inserter(symmetricDifferenceSet, symmetricDifferenceSet.begin()));
+                                        std::inserter(symmetricDifferenceSet, symmetricDifferenceSet.begin()));
                     symmetricDifferenceSet.insert(symmetricDifferenceSet1.begin(), symmetricDifferenceSet1.end());
-                    for(auto minSet3: minSets){
-                        if(minSet3 == symmetricDifferenceSet){
+                    for (auto minSet3: minSets) {
+                        if (minSet3 == symmetricDifferenceSet) {
                             hasApropriateSet = true;
                             continue;
                         }
                     }
-                    if(!hasApropriateSet){
+                    if (!hasApropriateSet) {
                         return false;
                     }
                 }
             }
         }
-        
+
         return true;
     }
 };

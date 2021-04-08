@@ -17,7 +17,7 @@ class MiClosed {
         return true;
     }
 
-    static std::set<int> minimalMinSet(std::set<int> &set, const TemporalConstraint &constraint){
+    static std::set<int> minimalMinSet(std::set<int> &set, const TemporalConstraint &constraint) {
         std::set<int> minimalMin;
         for (auto tuple: constraint.constraintLanguage.relations[constraint.relation].tuples) {
             std::set<int> currentMin;
@@ -49,15 +49,15 @@ class MiClosed {
             std::set<int> intersectPrim;
             std::set_intersection(constraint.variables.begin(), constraint.variables.end(), set.begin(), set.end(),
                                   std::inserter(intersectPrim, intersectPrim.begin()));
-            for(auto variable: intersectPrim){
-                if(currentMin.find(variable) == currentMin.end()){
+            for (auto variable: intersectPrim) {
+                if (currentMin.find(variable) == currentMin.end()) {
                     doesContain = false;
                 }
             }
-            if(doesContain){
-                if(minimalMin.empty()){
+            if (doesContain) {
+                if (minimalMin.empty()) {
                     minimalMin.insert(currentMin.begin(), currentMin.end());
-                }else{
+                } else {
                     std::set<int> intersect;
                     std::set_intersection(minimalMin.begin(), minimalMin.end(), currentMin.begin(), currentMin.end(),
                                           std::inserter(intersect, intersect.begin()));
@@ -69,29 +69,29 @@ class MiClosed {
     }
 
     static void findFreeSet(const TemporalCSPInstance &instance, std::set<int> &set) {
-       for(auto variable: instance.variables()){
-           set.clear();
-           set.insert(variable);
-           bool recheck = true, correct = true;
-           while (recheck and correct){
-               recheck = false;
-               for(const auto& constraint: instance.constraints){
-                   if(!empty_intersection(set, constraint.variables)){
-                       auto minSet = minimalMinSet(set, constraint);
-                       int setSize = set.size();
-                       if(minSet.empty()){
-                           correct = false;
-                       }else{
-                           set.merge(minSet);
-                           if (set.size() != setSize)
-                               recheck = true;
-                       }
-                   }
-               }
-           }
-           if(correct) return;
-       }
-       set.clear();
+        for (auto variable: instance.variables()) {
+            set.clear();
+            set.insert(variable);
+            bool recheck = true, correct = true;
+            while (recheck and correct) {
+                recheck = false;
+                for (const auto &constraint: instance.constraints) {
+                    if (!empty_intersection(set, constraint.variables)) {
+                        auto minSet = minimalMinSet(set, constraint);
+                        int setSize = set.size();
+                        if (minSet.empty()) {
+                            correct = false;
+                        } else {
+                            set.merge(minSet);
+                            if (set.size() != setSize)
+                                recheck = true;
+                        }
+                    }
+                }
+            }
+            if (correct) return;
+        }
+        set.clear();
     }
 
     static void orderedProjection(TemporalCSPInstance &instance, const std::set<int> &set) {

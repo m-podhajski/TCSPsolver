@@ -30,9 +30,9 @@ public:
     }
 
     static void test_mi_closed() {
-        WeakLinearOrder order1(4, {0, 0, 1, 1}); 
-        WeakLinearOrder order2(4, {1, 1, 0, 0}); 
-        WeakLinearOrder order3(4, {0, 0, 1, 2}); 
+        WeakLinearOrder order1(4, {0, 0, 1, 1});
+        WeakLinearOrder order2(4, {1, 1, 0, 0});
+        WeakLinearOrder order3(4, {0, 0, 1, 2});
         WeakLinearOrder order4(4, {2, 1, 0, 0});
 
         TemporalRelation relation1(4, {order1, order2, order3, order4});
@@ -65,7 +65,7 @@ public:
         WeakLinearOrder order1(3, {0, 0, 1});
         WeakLinearOrder order2(3, {1, 0, 0});
         WeakLinearOrder order3(3, {0, 1, 0});
-        TemporalRelation relation(3, {order1, order2, order3}); 
+        TemporalRelation relation(3, {order1, order2, order3});
         TemporalConstraintLanguage temporalConstraintLanguage({relation});
     }
 

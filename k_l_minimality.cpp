@@ -119,7 +119,7 @@ private:
         std::vector<int> remainingOrders1, remainingOrders2;
         for (int i = 0; i < constraint1.size(); i++) {
             for (int j = 0; j < constraint2.size(); j++) {
-                if(linearOrderSubset1[i] == linearOrderSubset2[j]){
+                if (linearOrderSubset1[i] == linearOrderSubset2[j]) {
                     remainingOrders1.push_back(i);
                     break;
                 }
@@ -127,18 +127,18 @@ private:
         }
         for (int i = 0; i < constraint2.size(); i++) {
             for (int j = 0; j < constraint1.size(); j++) {
-                if(linearOrderSubset2[i] == linearOrderSubset1[j]){
+                if (linearOrderSubset2[i] == linearOrderSubset1[j]) {
                     remainingOrders2.push_back(i);
                     break;
                 }
             }
         }
-        if(remainingOrders1.size() == constraint1.size() && remainingOrders2.size() == constraint2.size()){
+        if (remainingOrders1.size() == constraint1.size() && remainingOrders2.size() == constraint2.size()) {
             return false;
         }
-        if(remainingOrders1.size() != constraint1.size()){
+        if (remainingOrders1.size() != constraint1.size()) {
             std::set<WeakLinearOrder> weakLinearOrders;
-            for(auto i: remainingOrders1){
+            for (auto i: remainingOrders1) {
                 weakLinearOrders.insert(constraint1[i]);
             }
             TemporalRelation relation(constraint1[0].list.size(), weakLinearOrders);
@@ -146,16 +146,16 @@ private:
             relations.push_back(relation);
             TemporalConstraintLanguage language(relations);
             std::vector<TemporalConstraint> constraints = cspInstance.constraints;
-            for(auto &constraint: constraints){
+            for (auto &constraint: constraints) {
                 constraint.constraintLanguage = language;
             }
             constraints[constraint1Index].relation = relations.size() - 1;
             TemporalCSPInstance instance(language, constraints);
             cspInstance = instance;
         }
-        if(remainingOrders2.size() != constraint2.size()){
+        if (remainingOrders2.size() != constraint2.size()) {
             std::set<WeakLinearOrder> weakLinearOrders;
-            for(auto i: remainingOrders2){
+            for (auto i: remainingOrders2) {
                 weakLinearOrders.insert(constraint2[i]);
             }
             TemporalRelation relation(constraint2[0].list.size(), weakLinearOrders);
@@ -163,7 +163,7 @@ private:
             relations.push_back(relation);
             TemporalConstraintLanguage language(relations);
             std::vector<TemporalConstraint> constraints = cspInstance.constraints;
-            for(auto &constraint: constraints){
+            for (auto &constraint: constraints) {
                 constraint.constraintLanguage = language;
             }
             constraints[constraint2Index].relation = relations.size() - 1;

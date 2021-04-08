@@ -84,7 +84,7 @@ private:
         }
         std::unordered_map<int, bool> stackMember;
         std::unordered_map<int, int> lowLink;
-        for (const auto& vertex: leastValueTuple) {
+        for (const auto &vertex: leastValueTuple) {
             if (sscomponents[vertex.first] == -1) {
                 strongConnect(vertex.first, index, stackMember, lowLink, stack, sscomponents, leastValueTuple,
                               variableToConstraintPosition, components);
@@ -93,8 +93,6 @@ private:
     }
 
     static bool spec(TemporalCSPInstance cspInstance, std::set<int> &newVariables) {
-        //TODO: set up this structure more efficiently
-        // edge x->y iff leastValueTuple[x] is not min or leastValueTuple[x] is min and y in equiv[x]
         std::unordered_map<int, std::map<TemporalConstraint *, WeakLinearOrder *>> leastValueTuple;
         std::unordered_map<int, std::map<TemporalConstraint *, int>> variableToConstraintPosition;
         std::unordered_map<int, std::unordered_set<TemporalConstraint *>> blocked;
@@ -159,23 +157,25 @@ private:
 
                 constraint.first->orderedProjection({currentSink});
 
-                for (int i =0;i<constraint.first->variables.size();i++) {
+                for (int i = 0; i < constraint.first->variables.size(); i++) {
                     int variable = constraint.first->variables[i];
-                    if(variable == -1){
+                    if (variable == -1) {
                         continue;
                     }
                     if (blocked[variable].find(constraint.first) != blocked[variable].end()) {
                         int min = leastValueTuple[variable][constraint.first]->toList().size();
                         for (int j = 0; j < leastValueTuple[variable][constraint.first]->toList().size(); j++) {
-                            if (constraint.first->variables[j] != -1 && leastValueTuple[variable][constraint.first]->toList()[j] < min) {
+                            if (constraint.first->variables[j] != -1 &&
+                                leastValueTuple[variable][constraint.first]->toList()[j] < min) {
                                 min = leastValueTuple[variable][constraint.first]->toList()[j];
                             }
                         }
-                        if(leastValueTuple[variable][constraint.first]->toList()[i] == min){
+                        if (leastValueTuple[variable][constraint.first]->toList()[i] == min) {
                             blocked[variable].erase(constraint.first);
                         }
                     }
-                    if(blocked[variable].empty()&&edges(variable, leastValueTuple, variableToConstraintPosition).empty()){
+                    if (blocked[variable].empty() &&
+                        edges(variable, leastValueTuple, variableToConstraintPosition).empty()) {
                         sinkSet.insert(variable);
                         sinks.push_back(variable);
                     }

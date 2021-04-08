@@ -3,71 +3,55 @@
 #include <regex>
 #include "../input_output.cpp"
 
-static bool _next(std::vector<int> &numbers, int size)
-{
-    for (int i = size - 1; i >= 0; i--)
-    {
-        if (numbers[i] != size - 1)
-        {
+static bool _next(std::vector<int> &numbers, int size) {
+    for (int i = size - 1; i >= 0; i--) {
+        if (numbers[i] != size - 1) {
             numbers[i]++;
             break;
-        }
-        else if (i != 0)
-        {
+        } else if (i != 0) {
             numbers[i] = 0;
-        }
-        else
-        {
+        } else {
             return false;
         }
     }
     return true;
 }
 
-static bool satisfiesConstraints(std::vector<int> list, std::vector<std::vector<std::pair<std::pair<int, int>, int>>> constraints)
-{
-    for (auto ors : constraints)
-    {
+static bool
+satisfiesConstraints(std::vector<int> list, std::vector<std::vector<std::pair<std::pair<int, int>, int>>> constraints) {
+    for (auto ors : constraints) {
         bool isSatisfied = true;
-        for (auto cons : ors)
-        {
+        for (auto cons : ors) {
             auto op = cons.second;
-            if (op == 0 && !(list[cons.first.first - 1] <= list[cons.first.second - 1]))
-            {
+            if (op == 0 && !(list[cons.first.first - 1] <= list[cons.first.second - 1])) {
                 isSatisfied = false;
                 break;
             }
-            if (op == 1 && !(list[cons.first.first - 1] == list[cons.first.second - 1]))
-            {
+            if (op == 1 && !(list[cons.first.first - 1] == list[cons.first.second - 1])) {
                 isSatisfied = false;
                 break;
             }
-            if (op == 2 && !(list[cons.first.first - 1] < list[cons.first.second - 1]))
-            {
+            if (op == 2 && !(list[cons.first.first - 1] < list[cons.first.second - 1])) {
                 isSatisfied = false;
                 break;
             }
         }
-        if (isSatisfied)
-        {
+        if (isSatisfied) {
             return true;
         }
     }
     return false;
 }
 
-static TemporalRelation generateRelation(int size, std::vector<std::vector<std::pair<std::pair<int, int>, int>>> constraints)
-{
+static TemporalRelation
+generateRelation(int size, std::vector<std::vector<std::pair<std::pair<int, int>, int>>> constraints) {
     std::set<WeakLinearOrder> weakLinearOrders;
     std::vector<int> numbers(size);
-    if (satisfiesConstraints(numbers, constraints))
-    {
+    if (satisfiesConstraints(numbers, constraints)) {
         weakLinearOrders.insert(WeakLinearOrder(size, numbers));
     }
-    while (_next(numbers, size))
-    {
-        if (satisfiesConstraints(numbers, constraints))
-        {
+    while (_next(numbers, size)) {
+        if (satisfiesConstraints(numbers, constraints)) {
             weakLinearOrders.insert(WeakLinearOrder(size, numbers));
         }
     }
@@ -75,38 +59,31 @@ static TemporalRelation generateRelation(int size, std::vector<std::vector<std::
     return fullRelation;
 }
 
-static std::vector<std::vector<std::pair<std::pair<int, int>, int>>> parseConstraint(std::string constraint)
-{
+static std::vector<std::vector<std::pair<std::pair<int, int>, int>>> parseConstraint(std::string constraint) {
     std::regex regex{R"(or)"};
     std::sregex_token_iterator it{constraint.begin(), constraint.end(), regex, -1};
     std::vector<std::string> v1{it, {}};
     std::vector<std::vector<std::pair<std::pair<int, int>, int>>> constraints;
-    for (auto s1 : v1)
-    {
+    for (auto s1 : v1) {
         std::vector<std::pair<std::pair<int, int>, int>> currentConstraint;
         std::regex regex1{R"(and)"};
         std::sregex_token_iterator it1{s1.begin(), s1.end(), regex1, -1};
         std::vector<std::string> v2{it1, {}};
-        for (auto s2 : v2)
-        {
-            s2.erase(std::remove_if(s2.begin(), s2.end(), [](char ch) { return ch == '(' || ch == ')' || ch == ' '; }), s2.end());
+        for (auto s2 : v2) {
+            s2.erase(std::remove_if(s2.begin(), s2.end(), [](char ch) { return ch == '(' || ch == ')' || ch == ' '; }),
+                     s2.end());
 
-            if (regex_search(s2, std::regex{R"(<=)"}))
-            {
+            if (regex_search(s2, std::regex{R"(<=)"})) {
                 std::regex regex1{R"(<=)"};
                 std::sregex_token_iterator it3{s2.begin(), s2.end(), regex1, -1};
                 std::vector<std::string> v3{it3, {}};
                 currentConstraint.push_back(std::make_pair(std::make_pair(std::stoi(v3[0]), std::stoi(v3[1])), 0));
-            }
-            else if (regex_search(s2, std::regex{R"(=)"}))
-            {
+            } else if (regex_search(s2, std::regex{R"(=)"})) {
                 std::regex regex1{R"(=)"};
                 std::sregex_token_iterator it3{s2.begin(), s2.end(), regex1, -1};
                 std::vector<std::string> v3{it3, {}};
                 currentConstraint.push_back(std::make_pair(std::make_pair(std::stoi(v3[0]), std::stoi(v3[1])), 1));
-            }
-            else if (regex_search(s2, std::regex{R"(<)"}))
-            {
+            } else if (regex_search(s2, std::regex{R"(<)"})) {
                 std::regex regex1{R"(<)"};
                 std::sregex_token_iterator it3{s2.begin(), s2.end(), regex1, -1};
                 std::vector<std::string> v3{it3, {}};
@@ -118,8 +95,7 @@ static std::vector<std::vector<std::pair<std::pair<int, int>, int>>> parseConstr
     return constraints;
 }
 
-int main()
-{
+int main() {
     std::cout << "Generating relation:" << std::endl;
     int arity;
     std::cout << "Arity: ";
@@ -134,10 +110,8 @@ int main()
     std::cout << "Input format:" << std::endl;
     std::cout << relation.arity << std::endl
               << relation.tuples.size() << std::endl;
-    for (auto wlo : relation.tuples)
-    {
-        for (auto a : wlo.toList())
-        {
+    for (auto wlo : relation.tuples) {
+        for (auto a : wlo.toList()) {
             std::cout << a << " ";
         }
         std::cout << std::endl;
